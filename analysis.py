@@ -79,3 +79,54 @@ final_df['quarter'] = final_df['order_date'].dt.quarter
 quarter_revenue = final_df.groupby('quarter')['total_amount'].sum().sort_values(ascending=False)
 quarter_map = {1:'Q1 (Jan–Mar)', 2:'Q2 (Apr–Jun)', 3:'Q3 (Jul–Sep)', 4:'Q4 (Oct–Dec)'}
 print("🔟 Quarter with highest revenue:", quarter_map[quarter_revenue.head(1).index[0]])
+import pandas as pd
+
+# -----------------------------
+# Load dataset
+# -----------------------------
+final_df = pd.read_csv("final_food_delivery_dataset.csv")
+
+# Clean column names
+final_df.columns = final_df.columns.str.strip()
+
+# Rename user column
+if 'order_user_id' in final_df.columns:
+    final_df.rename(columns={'order_user_id':'user_id'}, inplace=True)
+
+# Convert total_amount to numeric
+final_df['total_amount'] = pd.to_numeric(final_df['total_amount'], errors='coerce')
+
+# Convert order_date to datetime
+final_df['order_date'] = pd.to_datetime(final_df['order_date'], dayfirst=True)
+
+# -----------------------------
+# Question Calculations
+# -----------------------------
+
+# 1️⃣ Total orders by Gold members
+gold_orders = final_df[final_df['membership'] == 'Gold']
+total_gold_orders = len(gold_orders)
+print(" Total orders placed by Gold members:", total_gold_orders)
+
+# 2️⃣ Total revenue from Hyderabad (rounded)
+hyderabad_orders = final_df[final_df['city'].str.lower() == 'hyderabad']
+total_revenue_hyderabad = round(hyderabad_orders['total_amount'].sum())
+print(" Total revenue from Hyderabad:", total_revenue_hyderabad)
+
+# 3️⃣ Number of distinct users with at least one order
+distinct_users = final_df['user_id'].nunique()
+print("Distinct users with at least one order:", distinct_users)
+
+# 4️⃣ Average order value for Gold members (2 decimals)
+avg_order_gold = round(gold_orders['total_amount'].mean(), 2)
+print("Average order value for Gold members:", avg_order_gold)
+
+# 5️⃣ Number of orders for restaurants with rating ≥ 4.5
+high_rating_orders = len(final_df[final_df['rating'] >= 4.5])
+print("Orders for restaurants with rating ≥ 4.5:", high_rating_orders)
+
+# 6️⃣ Orders in the top revenue city among Gold members
+top_gold_city = gold_orders.groupby('city')['total_amount'].sum().idxmax()
+orders_top_gold_city = len(gold_orders[gold_orders['city'] == top_gold_city])
+print(f"Orders in the top revenue Gold city ({top_gold_city}):", orders_top_gold_city)
+print(f"{len(final_df)}")
